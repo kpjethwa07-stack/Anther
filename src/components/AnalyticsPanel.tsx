@@ -2,12 +2,21 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { TrendingUp, PieChart as PieIcon, BarChart3 } from 'lucide-react';
+import { getMockAnalytics } from '../lib/mockBackend';
 
 export default function AnalyticsPanel() {
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    fetch('/api/analytics').then(r => r.json()).then(setData).catch(() => {});
+    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname === 'localhost';
+    
+    if (isDemo) {
+      setData(getMockAnalytics());
+    } else {
+      fetch('/api/analytics').then(r => r.json()).then(setData).catch(() => {
+        setData(getMockAnalytics());
+      });
+    }
   }, []);
 
   if (!data) return null;

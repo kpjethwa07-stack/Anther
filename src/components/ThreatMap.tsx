@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Globe, AlertTriangle } from 'lucide-react';
+import { getMockThreatMap } from '../lib/mockBackend';
 
 interface ThreatRegion { region: string; lat: number; lng: number; threats: number; risk: string; }
 
 export default function ThreatMap() {
   const [regions, setRegions] = useState<ThreatRegion[]>([]);
-  useEffect(() => { fetch('/api/threat-map').then(r => r.json()).then(setRegions).catch(() => {}); }, []);
+  useEffect(() => { 
+    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname === 'localhost';
+    if (isDemo) {
+      setRegions(getMockThreatMap());
+    } else {
+      fetch('/api/threat-map').then(r => r.json()).then(setRegions).catch(() => {
+        setRegions(getMockThreatMap());
+      });
+    }
+  }, []);
 
   const riskColor = (r: string) => r === 'critical' ? '#ef4444' : r === 'high' ? '#f59e0b' : r === 'medium' ? '#8b5cf6' : '#10b981';
   const riskGlow = (r: string) => r === 'critical' ? 'shadow-[0_0_20px_rgba(239,68,68,0.4)]' : r === 'high' ? 'shadow-[0_0_15px_rgba(245,158,11,0.3)]' : '';

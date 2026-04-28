@@ -19,6 +19,31 @@ export default function AIScanPanel() {
     if (!url.trim()) return;
     setIsScanning(true); setResult(null); setIsEnforced(false);
     setScanPhase('Analyzing network signatures...');
+    
+    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname === 'localhost';
+    
+    if (isDemo) {
+      await new Promise(r => setTimeout(r, 1500));
+      setScanPhase('Matching pHash against distributed edge nodes...');
+      await new Promise(r => setTimeout(r, 1500));
+      setResult({ 
+        riskScore: 94, 
+        verdict: 'HIGH_RISK', 
+        matchedContent: 'Live Sports (EPL Match)', 
+        broadcaster: 'Sky Sports', 
+        platform: url.includes('twitch') ? 'Twitch' : 'Unknown Platform', 
+        techniques: ['Frame injection', 'Protocol obfuscation', 'Proxy masking'], 
+        evidence: ['pHash similarity match (94.2%)', 'Watermark detection', 'Illegal ad-network tags'], 
+        recommendedAction: 'Immediate DMCA Takedown', 
+        estimatedRevenueLoss: '$3,200', 
+        hashSimilarity: '94.2%', 
+        geoOrigin: 'Eastern Europe / Proxy Hub', 
+        legalBasis: 'DMCA §512' 
+      });
+      setIsScanning(false); setScanPhase('');
+      return;
+    }
+
     try {
       const res = await fetch('/api/ai-scan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
       const data = await res.json();

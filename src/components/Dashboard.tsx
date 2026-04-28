@@ -7,6 +7,7 @@ import {
 import AIScanPanel from './AIScanPanel';
 import AnalyticsPanel from './AnalyticsPanel';
 import ThreatMap from './ThreatMap';
+import { getMockLogs, getMockFeeds, getMockStats, mockEnforce, generateMockLog } from '../lib/mockBackend';
 
 interface DetectionLog {
   id: string; timestamp: string; sourceUrl: string; matchedFeed: string;
@@ -33,10 +34,16 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
+    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname === 'localhost'; // using mock locally as well for testing
+    
     const fetchData = async () => {
       try {
-        const [logsRes, feedsRes, statsRes] = await Promise.all([fetch('/api/logs'), fetch('/api/feeds'), fetch('/api/stats')]);
-        setLogs(await logsRes.json()); setFeeds(await feedsRes.json()); setStats(await statsRes.json());
+        if (isDemo) {
+          setLogs(getMockLogs()); setFeeds(getMockFeeds()); setStats(getMockStats());
+        } else {
+          const [logsRes, feedsRes, statsRes] = await Promise.all([fetch('/api/logs'), fetch('/api/feeds'), fetch('/api/stats')]);
+          setLogs(await logsRes.json()); setFeeds(await feedsRes.json()); setStats(await statsRes.json());
+        }
         addTerminalLog("SYSTEM_INITIALIZED: Connected to SentinelLens Database.");
       } catch { addTerminalLog("ERROR: Failed to fetch initial system state."); }
     };
@@ -44,35 +51,62 @@ export default function Dashboard() {
   }, [addTerminalLog]);
 
   useEffect(() => {
-    const eventSource = new EventSource('/api/stream');
-    eventSource.onopen = () => { setIsConnected(true); addTerminalLog("STREAM_SYNC: Live vector feed established."); };
-    eventSource.onmessage = (event) => {
-      const { type, data } = JSON.parse(event.data);
-      switch (type) {
-        case 'NEW_LOG':
-          setLogs(prev => [data, ...prev].slice(0, 50));
-          setPendingClaim(data);
-          addTerminalLog(`VECTOR_DETECTED: Match found on ${data.platform} (${data.confidence}%)`);
-          fetch('/api/stats').then(res => res.json()).then(setStats);
-          break;
-        case 'LOG_UPDATED':
-          setLogs(prev => prev.map(log => log.id === data.id ? data : log));
-          addTerminalLog(`PROTOCOL_ENFORCED: Claim confirmed for ${data.id}`);
-          fetch('/api/stats').then(res => res.json()).then(setStats);
-          break;
-        case 'FEEDS_UPDATED':
-          setFeeds(data); break;
-      }
-    };
-    eventSource.onerror = () => { setIsConnected(false); addTerminalLog("WARNING: Feed synchronization lost. Reconnecting..."); };
-    return () => eventSource.close();
+    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname === 'localhost';
+    
+    if (isDemo) {
+      setIsConnected(true); addTerminalLog("STREAM_SYNC: Live vector feed established.");
+      
+      const interval = setInterval(() => {
+        if (Math.random() > 0.7) {
+          const newLog = generateMockLog();
+          setLogs(prev => [newLog, ...prev].slice(0, 50));
+          setPendingClaim(newLog);
+          addTerminalLog(`VECTOR_DETECTED: Match found on ${newLog.platform} (${newLog.confidence}%)`);
+        }
+        setStats(getMockStats());
+        setFeeds(getMockFeeds());
+      }, 3000);
+      
+      return () => clearInterval(interval);
+    } else {
+      const eventSource = new EventSource('/api/stream');
+      eventSource.onopen = () => { setIsConnected(true); addTerminalLog("STREAM_SYNC: Live vector feed established."); };
+      eventSource.onmessage = (event) => {
+        const { type, data } = JSON.parse(event.data);
+        switch (type) {
+          case 'NEW_LOG':
+            setLogs(prev => [data, ...prev].slice(0, 50));
+            setPendingClaim(data);
+            addTerminalLog(`VECTOR_DETECTED: Match found on ${data.platform} (${data.confidence}%)`);
+            fetch('/api/stats').then(res => res.json()).then(setStats);
+            break;
+          case 'LOG_UPDATED':
+            setLogs(prev => prev.map(log => log.id === data.id ? data : log));
+            addTerminalLog(`PROTOCOL_ENFORCED: Claim confirmed for ${data.id}`);
+            fetch('/api/stats').then(res => res.json()).then(setStats);
+            break;
+          case 'FEEDS_UPDATED':
+            setFeeds(data); break;
+        }
+      };
+      eventSource.onerror = () => { setIsConnected(false); addTerminalLog("WARNING: Feed synchronization lost. Reconnecting..."); };
+      return () => eventSource.close();
+    }
   }, [addTerminalLog]);
 
   const handleEnforce = async (logId: string) => {
+    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname === 'localhost';
     setIsEnforcing(true);
     addTerminalLog(`EXECUTING_PROTOCOL: Transmitting claim for ${logId}...`);
     try {
-      await fetch('/api/enforce', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ logId }) });
+      if (isDemo) {
+        await new Promise(r => setTimeout(r, 800));
+        const updatedLog = mockEnforce(logId);
+        if (updatedLog) setLogs(prev => prev.map(log => log.id === updatedLog.id ? updatedLog : log));
+        addTerminalLog(`PROTOCOL_ENFORCED: Claim confirmed for ${logId}`);
+      } else {
+        await fetch('/api/enforce', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ logId }) });
+      }
       setPendingClaim(null);
     } catch { addTerminalLog("ERROR: Enforcement protocol failed."); }
     finally { setIsEnforcing(false); }
