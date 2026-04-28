@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Shield, AlertTriangle, Zap, Globe, FileWarning, Scale, MapPin, Fingerprint, Loader2, Sparkles, ChevronRight } from 'lucide-react';
+import { Search, Shield, AlertTriangle, Zap, Globe, FileWarning, Scale, MapPin, Fingerprint, Loader2, Sparkles, ChevronRight, CheckCircle2 } from 'lucide-react';
 
 interface Analysis {
   riskScore: number; verdict: string; matchedContent: string; broadcaster: string;
