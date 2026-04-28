@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Shield, 
@@ -172,8 +172,8 @@ function AppContent() {
 
 export default function App() {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <AppContent />
-    </HashRouter>
+    </BrowserRouter>
   );
 }

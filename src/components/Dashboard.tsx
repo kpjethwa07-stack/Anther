@@ -51,7 +51,7 @@ export default function Dashboard() {
   }, [addTerminalLog]);
 
   useEffect(() => {
-    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname === 'localhost';
+    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname.includes('netlify.app') || window.location.hostname === 'localhost';
 
     if (isDemo) {
       setIsConnected(true); addTerminalLog("STREAM_SYNC: Live vector feed established.");
@@ -95,7 +95,7 @@ export default function Dashboard() {
   }, [addTerminalLog]);
 
   const handleEnforce = async (logId: string) => {
-    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname === 'localhost';
+    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname.includes('netlify.app') || window.location.hostname === 'localhost';
     setIsEnforcing(true);
     addTerminalLog(`EXECUTING_PROTOCOL: Transmitting claim for ${logId}...`);
     try {
