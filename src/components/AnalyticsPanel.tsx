@@ -8,7 +8,7 @@ export default function AnalyticsPanel() {
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname === 'localhost';
+    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname.includes('netlify.app') || window.location.hostname === 'localhost';
     
     if (isDemo) {
       setData(getMockAnalytics());

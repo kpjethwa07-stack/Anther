@@ -20,7 +20,7 @@ export default function AIScanPanel() {
     setIsScanning(true); setResult(null); setIsEnforced(false);
     setScanPhase('Analyzing network signatures...');
     
-    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname === 'localhost';
+    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname.includes('netlify.app') || window.location.hostname === 'localhost';
     
     if (isDemo) {
       await new Promise(r => setTimeout(r, 1500));

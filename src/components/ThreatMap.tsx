@@ -8,7 +8,7 @@ interface ThreatRegion { region: string; lat: number; lng: number; threats: numb
 export default function ThreatMap() {
   const [regions, setRegions] = useState<ThreatRegion[]>([]);
   useEffect(() => { 
-    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname === 'localhost';
+    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname.includes('netlify.app') || window.location.hostname === 'localhost';
     if (isDemo) {
       setRegions(getMockThreatMap());
     } else {

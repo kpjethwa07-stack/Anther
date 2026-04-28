@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
+import {
   Activity, Shield, Zap, Search, AlertTriangle, BarChart3,
   Terminal as TerminalIcon, Fingerprint, Play, CheckCircle2, ShieldCheck
 } from 'lucide-react';
@@ -28,14 +28,14 @@ export default function Dashboard() {
   const [pendingClaim, setPendingClaim] = useState<DetectionLog | null>(null);
   const [isEnforcing, setIsEnforcing] = useState(false);
   const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
-  
+
   const addTerminalLog = useCallback((msg: string) => {
     setTerminalLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev].slice(0, 8));
   }, []);
 
   useEffect(() => {
-    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname === 'localhost'; // using mock locally as well for testing
-    
+    const isDemo = window.location.hostname.includes('github.io') || window.location.hostname.includes('netlify.app') || window.location.hostname === 'localhost'; // using mock locally as well for testing
+
     const fetchData = async () => {
       try {
         if (isDemo) {
@@ -52,10 +52,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     const isDemo = window.location.hostname.includes('github.io') || window.location.hostname === 'localhost';
-    
+
     if (isDemo) {
       setIsConnected(true); addTerminalLog("STREAM_SYNC: Live vector feed established.");
-      
+
       const interval = setInterval(() => {
         if (Math.random() > 0.7) {
           const newLog = generateMockLog();
@@ -66,7 +66,7 @@ export default function Dashboard() {
         setStats(getMockStats());
         setFeeds(getMockFeeds());
       }, 3000);
-      
+
       return () => clearInterval(interval);
     } else {
       const eventSource = new EventSource('/api/stream');
@@ -139,7 +139,7 @@ export default function Dashboard() {
             { label: 'Avg Confidence', value: stats.avgConfidence, icon: Zap, color: 'from-emerald-500/10 to-emerald-500/5' },
             { label: 'Recovered', value: stats.revenueRecovered, icon: BarChart3, color: 'from-violet-500/10 to-violet-500/5' },
           ].map((stat, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} 
+            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: i * 0.05 }}
               className="glass-card-hover rounded-2xl p-5 min-w-[150px] group"
             >
@@ -174,15 +174,14 @@ export default function Dashboard() {
                 >
                   <div className="flex items-center justify-between mb-2.5">
                     <span className="text-xs font-bold text-white/80">{feed.broadcaster}</span>
-                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
-                      feed.status === 'Stable' ? 'bg-emerald-500/10 text-emerald-400 shadow-neon-emerald' : 'bg-red-500/10 text-red-400'
-                    }`}>
+                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${feed.status === 'Stable' ? 'bg-emerald-500/10 text-emerald-400 shadow-neon-emerald' : 'bg-red-500/10 text-red-400'
+                      }`}>
                       {feed.status}
                     </span>
                   </div>
                   <div className="text-[11px] font-medium text-white/35 mb-3 truncate">{feed.name}</div>
                   <div className="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden">
-                    <motion.div 
+                    <motion.div
                       className={`h-full rounded-full ${feed.health > 80 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-amber-500 to-orange-500'}`}
                       animate={{ width: `${feed.health}%` }}
                       transition={{ type: 'spring', stiffness: 100, damping: 20 }}
@@ -305,9 +304,8 @@ export default function Dashboard() {
                           </div>
                         </td>
                         <td className="px-7 py-5">
-                          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                            log.status === 'Claimed' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/20'
-                          }`}>
+                          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${log.status === 'Claimed' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                            }`}>
                             {log.status === 'Claimed' ? <ShieldCheck className="w-3 h-3 shadow-neon-emerald" /> : <AlertTriangle className="w-3 h-3" />}
                             {log.status === 'Claimed' ? 'CONFIRMED' : 'ACTIVE'}
                           </div>
@@ -337,7 +335,7 @@ export default function Dashboard() {
       </div>
 
       {/* ═══ HACKATHON FEATURES ═══ */}
-      
+
       {/* AI Deep Scanner */}
       <div className="mt-10">
         <AIScanPanel />
