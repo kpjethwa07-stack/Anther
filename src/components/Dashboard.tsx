@@ -11,8 +11,8 @@ import { getMockLogs, getMockFeeds, getMockStats, mockEnforce, generateMockLog }
 
 interface DetectionLog {
   id: string; timestamp: string; sourceUrl: string; matchedFeed: string;
-  broadcaster: string; confidence: string; status: 'Detected' | 'Claimed';
-  platform: 'YouTube' | 'Twitch'; enforcedAt?: string;
+  broadcaster: string; confidence: string; status: string;
+  platform: string; enforcedAt?: string;
 }
 
 interface FeedStatus {
@@ -39,10 +39,10 @@ export default function Dashboard() {
     const fetchData = async () => {
       try {
         if (isDemo) {
-          setLogs(getMockLogs()); setFeeds(getMockFeeds()); setStats(getMockStats());
+          setLogs(getMockLogs() as any); setFeeds(getMockFeeds() as any); setStats(getMockStats() as any);
         } else {
           const [logsRes, feedsRes, statsRes] = await Promise.all([fetch('/api/logs'), fetch('/api/feeds'), fetch('/api/stats')]);
-          setLogs(await logsRes.json()); setFeeds(await feedsRes.json()); setStats(await statsRes.json());
+          setLogs(await logsRes.json() as any); setFeeds(await feedsRes.json() as any); setStats(await statsRes.json() as any);
         }
         addTerminalLog("SYSTEM_INITIALIZED: Connected to SentinelLens Database.");
       } catch { addTerminalLog("ERROR: Failed to fetch initial system state."); }
@@ -58,7 +58,7 @@ export default function Dashboard() {
 
       const interval = setInterval(() => {
         if (Math.random() > 0.7) {
-          const newLog = generateMockLog();
+          const newLog = generateMockLog() as any;
           setLogs(prev => [newLog, ...prev].slice(0, 50));
           setPendingClaim(newLog);
           addTerminalLog(`VECTOR_DETECTED: Match found on ${newLog.platform} (${newLog.confidence}%)`);
